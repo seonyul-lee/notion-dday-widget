@@ -1,22 +1,19 @@
-export default async function handler(req, res) {
-  const response = await fetch(
-    `https://api.notion.com/v1/databases/${process.env.DATABASE_ID}/query`,
-    {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${process.env.NOTION_TOKEN}`,
-        "Notion-Version": "2022-06-28",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        filter: {
-          property: "Show",
-          checkbox: { equals: true }
-        }
-      })
-    }
-  );
+import { Client } from "@notionhq/client";
 
-  const data = await response.json();
-  res.status(200).json(data);
+export default async function handler(req, res) {
+  try {
+    const notion = new Client({
+      auth: process.env.NOTION_TOKEN,
+    });
+
+    const response = await notion.databases.query({
+      database_id: process.env.DATABASE_ID,
+    });
+
+    res.status(200).json(response);
+  } catch (error) {
+    res.status(500).json({
+      error: error.message,
+    });
+  }
 }
